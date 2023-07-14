@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
                                       fs::path(filename).filename().replace_extension("")).string();
 
             for (auto i = 0; i < frames.size(); ++i) {
-                std::cout << "\tFound wave between " << frames[i].start << " and " << frames[i].finish << " seconds"
+                std::cout << "\tFound a wave between " << frames[i].start << " and " << frames[i].finish << " seconds"
                           << std::endl;
 
                 auto outFilename = outFilenamePrefix + "-" + std::to_string(i) + ".MP4";

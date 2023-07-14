@@ -25,6 +25,8 @@ private:
 class Video {
 public:
     static void CopyFromTo(std::string &fromFile, std::string &toFile, size_t from, size_t to) {
+        av_log_set_level(AV_LOG_QUIET);
+
         AVFormatContext *inputFormatContext = nullptr;
 
         auto ret = avformat_open_input(&inputFormatContext, fromFile.c_str(), nullptr, nullptr);
