@@ -1,6 +1,6 @@
 # GoProSurfSplitter
 
-It's a GoPro video analysis tool designed to detect cough waves using GPS data in video files.
+It's a GoPro video analysis tool designed to detect caught waves using GPS data in video files.
 
 ![Screenshot](.images/screenshot.png)
 
@@ -29,12 +29,12 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 
     * **Red:** The file does not match the format of a GoPro video.
     * **Gray:** The file does not contain any detected waves.
-    * **Black:** The file contains one or more cough waves.
+    * **Black:** The file contains one or more caught waves.
 
 4. **Watch Video Footage:**
    To watch a specific video, simply click on the corresponding file in the table. The video will be played, allowing
    you to review its content.
 
-5. **Navigate Cough Waves:**
-   To identify and set positions on cough waves within the video, click on the respective row in the waves table. This
-   feature allows you to precisely pinpoint the occurrences of cough waves.
+5. **Navigate Caught Waves:**
+   To identify and set positions on caught waves within the video, click on the respective row in the waves table. This
+   feature allows you to precisely pinpoint the occurrences of caught waves.
