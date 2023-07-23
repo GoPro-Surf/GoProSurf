@@ -1,29 +1,40 @@
 # GoProSurfSplitter
 
+It's a GoPro video analysis tool designed to detect cough waves using GPS data in video files.
+
+![Screenshot](.images/screenshot.png)
+
 ## How to build
+
 ```shell
-git clone --recursive  https://github.com/sergei-svistunov/GoProSurfSplitter.git
-cd GoProSurfSplitter
+git clone --recursive https://github.com/GoPro-Surf/GoProSurf.git
+cd GoProSurf
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 ```
 
 ## How to use
-```shell
-./GoProSurfSplitter --help
-```
-```
-It finds caught waves in GoPro videos with enabled GPS and writes them to new shorter files
-Usage:
-  GoProSurfSplitter [OPTION...]
 
-  -d, --directory arg  Directory with *.MP4 files (default: ./)
-  -o, --out arg        Output directory (default: ./waves)
-  -m, --margin arg     Additional time before and after detected wave (sec) 
-                       (default: 3)
-  -l, --length arg     Minimum wave length (sec) (default: 2)
-  -s, --speed arg      Minimum wave speed (m/s) (default: 2.0)
-  -h, --help           
+1. **Run the Application:**
+   Execute the application by running the command ./GoProSurf.
 
-```
+2. **Select GoPro Video Directory:**
+   Choose the directory where your GoPro video files are located. The application will process and analyze these files
+   for you.
+
+3. **Analyze Your Files:**
+   The list of video files will be displayed below. Each file will be highlighted with one of three colors, indicating
+   its status:
+
+    * **Red:** The file does not match the format of a GoPro video.
+    * **Gray:** The file does not contain any detected waves.
+    * **Black:** The file contains one or more cough waves.
+
+4. **Watch Video Footage:**
+   To watch a specific video, simply click on the corresponding file in the table. The video will be played, allowing
+   you to review its content.
+
+5. **Navigate Cough Waves:**
+   To identify and set positions on cough waves within the video, click on the respective row in the waves table. This
+   feature allows you to precisely pinpoint the occurrences of cough waves.

@@ -49,6 +49,18 @@ public:
         return sum / float(frames.size());
     }
 
+    float GetAvgAltitudes() {
+        if (fix == 0 || precision > 500 || frames.empty())
+            return 0;
+
+        float sum = 0.0f;
+        for (const auto &f: frames) {
+            sum += f.altitude;
+        }
+
+        return sum / float(frames.size());
+    }
+
 //private:
     uint8_t fix{};
     uint16_t precision{};
@@ -62,7 +74,8 @@ public:
         if (mp4handle == 0)
             throw std::invalid_argument(filename + " is an invalid MP4/MOV or it has no GPMF gpsBySeconds");
 
-        if (GetDuration(mp4handle) == 0)
+        duration = GetDuration(mp4handle);
+        if (duration == 0)
             throw std::invalid_argument(filename + " has no GPMF gpsBySeconds");
 
         auto payloads = GetNumberPayloads(mp4handle);
@@ -80,6 +93,8 @@ public:
 
             processStream(size_t(in), payload, payloadSize);
         }
+
+        CloseSource(mp4handle);
     };
 
     std::vector<float> GetAvgSpeeds3d() {
@@ -91,6 +106,25 @@ public:
         }
 
         return res;
+    }
+
+    std::vector<float> GetAvgAltitudes() {
+        std::vector<float> res;
+        res.reserve(gpsBySeconds.size());
+
+        for (auto &stream: gpsBySeconds) {
+            res.push_back(stream.GetAvgAltitudes());
+        }
+
+        return res;
+    }
+
+    [[nodiscard]] float GetVideoDuration() const {
+        return duration;
+    }
+
+    [[nodiscard]] QDateTime GetTs() const {
+        return ts;
     }
 
 private:
@@ -145,6 +179,16 @@ private:
                 precision = (uint16_t) BYTESWAP16(l[0]);
             }
 
+            if (key == STR2FOURCC("GPSU")) {
+                char t[13];
+                t[12] = 0;
+                strncpy(t, rawdata, 12);
+                auto dt = QDateTime::fromString(QString("20") + t, "yyyyMMddHHmmss");
+
+                if (ts.isNull() || dt < ts)
+                    ts = dt;
+            }
+
             if (key == STR2FOURCC("GPS5")) {
                 if (elements != 5)
                     throw std::invalid_argument("invalid GPS5 structure");
@@ -178,6 +222,8 @@ private:
     };
 
     std::vector<GpsStream> gpsBySeconds{};
+    float duration{};
+    QDateTime ts{};
 };
 
 

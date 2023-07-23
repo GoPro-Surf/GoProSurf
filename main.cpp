@@ -1,72 +1,231 @@
-#include <iostream>
-#include <filesystem>
-#include <exception>
-#include "cxxopts.hpp"
-#include "GpsInfo.h"
-#include "Detector.h"
-#include "Video.h"
-
-namespace fs = std::filesystem;
+#include <QApplication>
+#include <QFileSystemModel>
+#include <QFileIconProvider>
+#include <QMediaPlayer>
+#include <QMessageBox>
+#include <QAudioOutput>
+#include <QLineSeries>
+#include <QThread>
+#include <QStandardPaths>
+#include "QTWindow.h"
+#include "QGoProFiles.h"
+#include "QWavesModel.h"
+#include "QVersion.h"
 
 int main(int argc, char *argv[]) {
-    cxxopts::Options options("GoProSurfSplitter",
-                             "It finds caught waves in GoPro videos with enabled GPS and writes them to new shorter files");
+    QApplication app(argc, argv);
 
-    options.add_options()
-            ("d,directory", "Directory with *.MP4 files", cxxopts::value<std::string>()->default_value("./"))
-            ("o,out", "Output directory", cxxopts::value<std::string>()->default_value("./waves"))
-            ("m,margin", "Additional time before and after detected wave (sec)",
-             cxxopts::value<size_t>()->default_value("3"))
-            ("l,length", "Minimum wave length (sec)", cxxopts::value<size_t>()->default_value("2"))
-            ("s,speed", "Minimum wave speed (m/s)", cxxopts::value<float>()->default_value("2.0"))
-            ("h,help", "", cxxopts::value<bool>());
+    QMainWindow mainWindow;
+    Ui_MainWindow mainWindowUi{};
+    mainWindowUi.setupUi(&mainWindow);
 
-    cxxopts::ParseResult opts;
-    try {
-        opts = options.parse(argc, argv);
+    checkNewVersion(&mainWindow);
 
-        if (opts.count("help")) {
-            std::cout << options.help();
-            return 0;
+    QFileSystemModel dirsModel;
+    QGoProFiles filesModel((float) mainWindowUi.minSpeedSpinBox->value(), mainWindowUi.minDurationSpinBox->value());
+    QWavesModel wavesModel;
+    QMediaPlayer player;
+    QGraphicsLineItem *marker{};
+
+    auto setEnabledAll = [&](bool enabled) {
+        mainWindowUi.directoriesTreeView->setEnabled(enabled);
+        mainWindowUi.filesTable->setEnabled(enabled);
+        mainWindowUi.wavesTable->setEnabled(enabled);
+        mainWindowUi.minSpeedSpinBox->setEnabled(enabled);
+        mainWindowUi.minDurationSpinBox->setEnabled(enabled);
+        mainWindowUi.playerButton->setEnabled(enabled && mainWindowUi.filesTable->selectionModel()->hasSelection());
+        mainWindowUi.playerSlider->setEnabled(enabled && mainWindowUi.filesTable->selectionModel()->hasSelection());
+    };
+
+    QFileIconProvider fsIconProvider;
+    dirsModel.setIconProvider(&fsIconProvider);
+    dirsModel.setRootPath("");
+    dirsModel.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Drives);
+    mainWindowUi.directoriesTreeView->setModel(&dirsModel);
+    mainWindowUi.directoriesTreeView->hideColumn(1);
+    mainWindowUi.directoriesTreeView->hideColumn(2);
+    mainWindowUi.directoriesTreeView->hideColumn(3);
+    mainWindowUi.directoriesTreeView->setHeaderHidden(true);
+    QModelIndex rootIndex = dirsModel.index(dirsModel.rootPath());
+    mainWindowUi.directoriesTreeView->expand(rootIndex);
+
+    // Dirs tree
+    QModelIndex directoryIndex = dirsModel.index(QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
+    mainWindowUi.directoriesTreeView->setCurrentIndex(directoryIndex);
+    mainWindowUi.directoriesTreeView->scrollTo(directoryIndex);
+
+    // Files table
+    filesModel.setPath(dirsModel.filePath(directoryIndex));
+    mainWindowUi.filesTable->setModel(&filesModel);
+    mainWindowUi.filesTable->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+    // Waves view
+    mainWindowUi.wavesTable->setModel(&wavesModel);
+
+    // Player
+    player.setVideoOutput(mainWindowUi.videoWidget);
+    QAudioOutput audioOutput;
+    player.setAudioOutput(&audioOutput);
+    player.setLoops(QMediaPlayer::Infinite);
+
+    // Directory
+    QObject::connect(mainWindowUi.directoriesTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+                     [&](const QItemSelection &selected, const QItemSelection &deselected) {
+                         setEnabledAll(false);
+                         mainWindowUi.filesTable->clearSelection();
+                         QModelIndexList indexes = selected.indexes();
+                         QString path = indexes.isEmpty() ? "" : dirsModel.filePath(indexes.first());
+
+                         auto thr = QThread::create([path, &filesModel]() {
+                             filesModel.setPath(path);
+                         });
+
+                         QObject::connect(thr, &QThread::finished, [thr, setEnabledAll]() {
+                             thr->deleteLater();
+                             setEnabledAll(true);
+                         });
+
+                         thr->start();
+                     });
+
+    // Files
+    QObject::connect(mainWindowUi.filesTable->selectionModel(), &QItemSelectionModel::selectionChanged,
+                     [&](const QItemSelection &selected, const QItemSelection &deselected) {
+                         auto indexes = selected.indexes();
+                         if (!indexes.isEmpty()) {
+                             auto profile = filesModel.getProfile(indexes.first());
+
+                             wavesModel.setData(profile);
+
+                             auto *series = new QLineSeries;
+                             auto i = 0;
+                             float maxSpeed = 0;
+                             for (const auto &speed: profile.gpsInfo.GetAvgSpeeds3d()) {
+                                 series->append(i++, speed * 3.6);
+                                 if (speed > maxSpeed)
+                                     maxSpeed = speed;
+                             }
+
+                             auto *chart = new QChart();
+                             chart->legend()->hide();
+                             chart->addSeries(series);
+                             chart->createDefaultAxes();
+                             chart->axes(Qt::Vertical)[0]->setTitleText("km/h");
+                             chart->axes(Qt::Vertical)[0]->setTruncateLabels(false);
+
+                             mainWindowUi.chartView->setChart(chart);
+
+                             QPen pen(Qt::red);
+                             pen.setWidth(1);
+                             if (marker)
+                                 mainWindowUi.chartView->scene()->removeItem(marker);
+                             marker = new QGraphicsLineItem();
+                             marker->setPen(pen);
+
+                             auto scenePos1 = chart->mapToPosition(QPointF(0, 0));
+                             auto scenePos2 = chart->mapToPosition(QPointF(0, maxSpeed * 3.6));
+                             marker->setLine(QLineF(0, scenePos1.y(), 0, scenePos2.y()));
+
+                             mainWindowUi.chartView->scene()->addItem(marker);
+
+                             player.setSource(QUrl(profile.fileInfo.absoluteFilePath()));
+                         } else {
+                             goProFile data;
+                             wavesModel.setData(data);
+                             player.stop();
+                             player.setSource(QUrl(""));
+                         }
+
+                         setEnabledAll(true);
+                     });
+
+    // Waves
+    QObject::connect(mainWindowUi.wavesTable->selectionModel(), &QItemSelectionModel::selectionChanged,
+                     [&](const QItemSelection &selected, const QItemSelection &deselected) {
+                         auto indexes = selected.indexes();
+                         if (!indexes.isEmpty()) {
+                             player.setPosition((qint64) wavesModel.getWave(indexes.first()).start * 1000);
+                         }
+                     });
+
+    QObject::connect(mainWindowUi.wavesTable, &QAbstractItemView::clicked,
+                     [&](const QModelIndex &index) {
+                         if (index.isValid()) {
+                             player.setPosition((qint64) wavesModel.getWave(index).start * 1000);
+                         }
+                     });
+
+    // Detect settings
+    QObject::connect(mainWindowUi.minSpeedSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+                     [&](double value) {
+                         setEnabledAll(false);
+
+                         auto thr = QThread::create([value, &filesModel]() {
+                             filesModel.setMinSpeed((float) value);
+                         });
+
+                         QObject::connect(thr, &QThread::finished, [thr, setEnabledAll]() {
+                             thr->deleteLater();
+                             setEnabledAll(true);
+                         });
+
+                         thr->start();
+                     });
+
+    QObject::connect(mainWindowUi.minDurationSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+                     [&](int value) {
+                         setEnabledAll(false);
+
+                         auto thr = QThread::create([value, &filesModel]() {
+                             filesModel.setMinDuration(value);
+                         });
+
+                         QObject::connect(thr, &QThread::finished, [thr, setEnabledAll]() {
+                             thr->deleteLater();
+                             setEnabledAll(true);
+                         });
+
+                         thr->start();
+                     });
+
+    // Player
+    QObject::connect(&player, &QMediaPlayer::errorOccurred, [&]() {
+        QMessageBox::critical(nullptr, "Error", "Err" + player.errorString());
+    });
+
+    QObject::connect(&player, &QMediaPlayer::mediaStatusChanged, [&](QMediaPlayer::MediaStatus status) {
+        if (status == QMediaPlayer::LoadedMedia) {
+            mainWindowUi.playerSlider->setRange(0, (int) player.duration());
+            mainWindowUi.playerButton->setText("▶");
+
+            //ToDo: Hack to avoid sound delay, doesn't work well
+            player.audioOutput()->setMuted(true);
+            player.play();
+            player.pause();
+            player.audioOutput()->setMuted(false);
         }
-    } catch (const cxxopts::OptionException &e) {
-        std::cerr << "Error parsing command-line options: " << e.what() << std::endl;
-        std::cerr << options.help();
-        return -1;
-    }
+    });
 
-    if (!fs::exists(opts["out"].as<std::string>())) {
-        if (!fs::create_directory(opts["out"].as<std::string>()))
-            throw std::invalid_argument("Cannot create directory " + opts["out"].as<std::string>());
-    }
+    QObject::connect(&player, &QMediaPlayer::positionChanged, [&](qint64 position) {
+        mainWindowUi.playerSlider->setValue((int) position);
+        marker->setX(mainWindowUi.chartView->chart()->mapToPosition(QPointF((qreal) position / 1000, 0)).x());
+    });
 
-    for (const auto &entry: fs::directory_iterator(opts["directory"].as<std::string>())) {
-        if (entry.is_regular_file() && entry.path().extension() == ".MP4") {
-            auto filename = entry.path().string();
+    // Slider
+    QObject::connect(mainWindowUi.playerSlider, &QSlider::valueChanged, &player, &QMediaPlayer::setPosition);
 
-            GpsInfo gps;
-            gps.ReadFromVideo(filename);
-
-            std::cout << "Processing file " << filename << std::endl;
-            auto frames = Detector::GetWaves(gps, opts["margin"].as<size_t>(), opts["length"].as<size_t>(),
-                                             opts["speed"].as<float>());
-            if (frames.empty())
-                std::cout << "\t No waves found" << std::endl;
-
-            auto outFilenamePrefix = (fs::path(opts["out"].as<std::string>()) /
-                                      fs::path(filename).filename().replace_extension("")).string();
-
-            for (auto i = 0; i < frames.size(); ++i) {
-                std::cout << "\tFound a wave between " << frames[i].start << " and " << frames[i].finish << " seconds"
-                          << std::endl;
-
-                auto outFilename = outFilenamePrefix + "-" + std::to_string(i) + ".MP4";
-                std::cout << "\t\tWriting to " << outFilename << " ... ";
-                Video::CopyFromTo(filename, outFilename, frames[i].start, frames[i].finish);
-                std::cout << "done" << std::endl;
-            }
+    // Play Pause Button
+    QObject::connect(mainWindowUi.playerButton, &QPushButton::clicked, [&]() {
+        if (mainWindowUi.playerButton->text() == "▶") {
+            mainWindowUi.playerButton->setText("⏸");
+            player.play();
+        } else {
+            mainWindowUi.playerButton->setText("▶");
+            player.pause();
         }
-    }
+    });
 
-    return 0;
+    mainWindow.show();
+
+    return QApplication::exec();
 }
