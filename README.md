@@ -1,4 +1,4 @@
-# GoProSurfSplitter
+# GoPro Surf
 
 It's a GoPro video analysis tool designed to detect caught waves using GPS data in video files.
 
