@@ -25,7 +25,7 @@ jobs:
       with:
         version: '6.2.4'
         install-deps: 'true'
-        modules: 'qtcore qtcharts qtgui qtwidgets qtmultimedia qtmultimediawidgets'
+        modules: 'qtcharts qtmultimedia'
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
