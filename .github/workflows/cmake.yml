@@ -70,4 +70,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: windows-${{ vars.GITHUB_REF_NAME }}
-        #path: /home/runner/work/GoProSurf/GoProSurf/build/GoProSurf
+        path: D:\a\GoProSurf\GoProSurf\build\Release\GoProSurf.exe
