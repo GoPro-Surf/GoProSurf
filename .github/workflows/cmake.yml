@@ -42,3 +42,9 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ubuntu-${{ vars.GITHUB_REF_NAME }}
+        path: /home/runner/work/GoProSurf/GoProSurf/build/GoProSurf
