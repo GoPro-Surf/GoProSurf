@@ -30,6 +30,9 @@ jobs:
         install-deps: 'true'
         setup-python: 'false'
         modules: 'qtcharts qtmultimedia'
+        
+    - name: install_qt_deps
+      run: sudo apt-get install libgstreamer-gl1.0-0
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
