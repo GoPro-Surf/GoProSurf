@@ -130,14 +130,7 @@ private:
                 } catch (...) {
                     noGpsInfo = true;
                 }
-                files.push_back(
-                        {
-                                .fileInfo =  fileInfo,
-                                .gpsInfo = gpsInfo,
-                                .noGpsInfo = noGpsInfo,
-                                .waves = waves,
-                        }
-                );
+                files.push_back({fileInfo, gpsInfo, noGpsInfo, waves});
             }
         }
 
