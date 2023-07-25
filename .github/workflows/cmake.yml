@@ -64,7 +64,9 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: |
+        cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        cp C:\Qt\6.2.4\msvc2019_64\bin\Qt6Chartsd.dll D:\a\GoProSurf\GoProSurf\build\Release
       
     - name: Upload artifact
       uses: actions/upload-artifact@v3
