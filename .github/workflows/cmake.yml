@@ -68,7 +68,7 @@ jobs:
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
         cp ${{env.Qt6_DIR}}/bin/Qt6Charts.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Core.dll ${{github.workspace}}/build/Release
-        cp ${{env.Qt6_DIR}}/bin/Qt6Gui.d:ll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6Gui.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Multimedia.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6MultimediaWidgets.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Network.dll ${{github.workspace}}/build/Release
