@@ -39,8 +39,8 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ubuntu-${{env.GITHUB_REF_NAME}}
-        path: ${{github.workspace}}/build/Release
+        name: ubuntu.zip
+        path: ${{github.workspace}}/build
         
   build_windows:
     runs-on: windows-latest
@@ -82,5 +82,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows-${{env.GITHUB_REF_NAME}}
+        name: windows.zip
         path: ${{github.workspace}}\build\Release
