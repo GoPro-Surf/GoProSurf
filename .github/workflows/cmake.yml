@@ -66,7 +66,7 @@ jobs:
     - name: Build
       run: |
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-        cp ${Qt6_DIR}\bin\Qt6Chartsd.dll ${{github.workspace}}\build\Release
+        cp $Qt6_DIR/bin/Qt6Chartsd.dll ${{github.workspace}}/build/Release
       
     - name: Upload artifact
       uses: actions/upload-artifact@v3
