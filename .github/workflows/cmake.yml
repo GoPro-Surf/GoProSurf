@@ -39,7 +39,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ubuntu-${{ vars.GITHUB_REF_NAME }}
+        name: ubuntu-${{ env.GITHUB_REF_NAME }}
         path: /home/runner/work/GoProSurf/GoProSurf/build/GoProSurf
         
   build_windows:
@@ -66,12 +66,10 @@ jobs:
     - name: Build
       run: |
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-        env
-        ls D:\a\GoProSurf
-        cp D:\Qt\6.2.4\msvc2019_64\bin\Qt6Chartsd.dll D:\a\GoProSurf\GoProSurf\build\Release
+        cp ${Qt6_DIR}\bin\Qt6Chartsd.dll ${{github.workspace}}\build\Release
       
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows-${{ vars.GITHUB_REF_NAME }}
-        path: D:\a\GoProSurf\GoProSurf\build\Release
+        name: windows-${{ env.GITHUB_REF_NAME }}
+        path: ${{github.workspace}}\build\Release
