@@ -14,6 +14,14 @@ find_package(Qt6 COMPONENTS Core Charts Gui Widgets Multimedia MultimediaWidgets
 #        libavutil
 #        )
 
+if(WIN32)
+    set(ICON_FILE ${CMAKE_SOURCE_DIR}/.win/icon.ico)
+    set(WIN_RC_FILE ${CMAKE_SOURCE_DIR}/.win/resource.rc)
+    set(CMAKE_RC_COMPILER_INIT windres)
+    ENABLE_LANGUAGE(RC)
+    SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+endif()
+
 include_directories(third_party/gpmf-parser)
 
 set(GOPROSURF_SOURCES
@@ -24,7 +32,7 @@ set(GOPROSURF_SOURCES
         )
 
 if (WIN32)
-    add_executable(GoProSurf main.cpp)
+    add_executable(GoProSurf WIN32 main.cpp ${WIN_RC_FILE})
 else ()
     add_executable(GoProSurf main.cpp)
 endif ()
