@@ -39,7 +39,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ubuntu.zip
+        name: ubuntu
         path: ${{github.workspace}}/build
         
   build_windows:
@@ -82,5 +82,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows.zip
+        name: windows
         path: ${{github.workspace}}\build\Release
