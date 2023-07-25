@@ -68,7 +68,7 @@ jobs:
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
         cp ${{env.Qt6_DIR}}/bin/Qt6Charts.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Core.dll ${{github.workspace}}/build/Release
-        cp ${{env.Qt6_DIR}}/bin/Qt6Gui.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6Gui.d:ll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Multimedia.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6MultimediaWidgets.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Network.dll ${{github.workspace}}/build/Release
@@ -79,7 +79,7 @@ jobs:
         mkdir ${{github.workspace}}/build/Release/platforms
         cp ${{env.QT_PLUGIN_PATH}}/platforms/qwindows.dll ${{github.workspace}}/build/Release/platforms
         mkdir ${{github.workspace}}/build/Release/tls
-        cp ${{env.QT_PLUGIN_PATH}}/tls::/qschannelbackend.dll ${{github.workspace}}/build/Release/tls
+        cp ${{env.QT_PLUGIN_PATH}}/tls/qschannelbackend.dll ${{github.workspace}}/build/Release/tls
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
