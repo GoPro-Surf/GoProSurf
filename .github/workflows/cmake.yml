@@ -11,6 +11,7 @@ env:
 
 jobs:
   build_ubuntu:
+    if: contains('', 'a')
     runs-on: ubuntu-latest
 
     steps:
@@ -66,6 +67,8 @@ jobs:
     - name: Build
       run: |
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        echo $Qt6_DIR
+        echo ${{env.Qt6_DIR}}
         cp $Qt6_DIR/bin/Qt6Chartsd.dll ${{github.workspace}}/build/Release
       
     - name: Upload artifact
