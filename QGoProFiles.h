@@ -7,6 +7,13 @@
 
 #include "GpsInfo.h"
 #include "Detector.h"
+#include <QFileInfo.h>
+#include <QAbstractItemModel>
+#include <QBrush>
+#include <QDir>
+#include <QFileSystemModel>
+#include <QFileIconProvider>
+#include <QCoreApplication>
 
 struct goProFile {
     QFileInfo fileInfo;
@@ -118,6 +125,8 @@ private:
 
         auto filesList = fsModel.rootDirectory().entryInfoList(QDir::Files, QDir::Name);
         for (const auto &fileInfo: filesList) {
+            QCoreApplication::processEvents();
+
             if (fileInfo.filesystemFilePath().extension() == ".MP4") {
                 auto inputFile = fileInfo.absoluteFilePath().toStdString();
                 GpsInfo gpsInfo;

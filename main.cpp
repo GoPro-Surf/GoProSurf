@@ -5,15 +5,24 @@
 #include <QMessageBox>
 #include <QAudioOutput>
 #include <QLineSeries>
-#include <QThread>
 #include <QStandardPaths>
 #include "QTWindow.h"
 #include "QGoProFiles.h"
 #include "QWavesModel.h"
 #include "QVersion.h"
 
-int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
+#ifdef _WIN32
+
+#include <Windows.h>
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication app(__argc, __argv);
+
+#else
+    int main(int argc, char* argv[]) {
+        QApplication app(argc, argv);
+#endif
 
     QMainWindow mainWindow;
     Ui_MainWindow mainWindowUi{};
@@ -76,16 +85,8 @@ int main(int argc, char *argv[]) {
                          QModelIndexList indexes = selected.indexes();
                          QString path = indexes.isEmpty() ? "" : dirsModel.filePath(indexes.first());
 
-                         auto thr = QThread::create([path, &filesModel]() {
-                             filesModel.setPath(path);
-                         });
-
-                         QObject::connect(thr, &QThread::finished, [thr, setEnabledAll]() {
-                             thr->deleteLater();
-                             setEnabledAll(true);
-                         });
-
-                         thr->start();
+                         filesModel.setPath(path);
+                         setEnabledAll(true);
                      });
 
     // Files
@@ -128,7 +129,7 @@ int main(int argc, char *argv[]) {
 
                              mainWindowUi.chartView->scene()->addItem(marker);
 
-                             player.setSource(QUrl(profile.fileInfo.absoluteFilePath()));
+                             player.setSource(QUrl::fromLocalFile(profile.fileInfo.absoluteFilePath()));
                          } else {
                              goProFile data;
                              wavesModel.setData(data);
@@ -159,33 +160,15 @@ int main(int argc, char *argv[]) {
     QObject::connect(mainWindowUi.minSpeedSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
                      [&](double value) {
                          setEnabledAll(false);
-
-                         auto thr = QThread::create([value, &filesModel]() {
-                             filesModel.setMinSpeed((float) value);
-                         });
-
-                         QObject::connect(thr, &QThread::finished, [thr, setEnabledAll]() {
-                             thr->deleteLater();
-                             setEnabledAll(true);
-                         });
-
-                         thr->start();
+                         filesModel.setMinSpeed((float) value);
+                         setEnabledAll(true);
                      });
 
     QObject::connect(mainWindowUi.minDurationSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
                      [&](int value) {
                          setEnabledAll(false);
-
-                         auto thr = QThread::create([value, &filesModel]() {
-                             filesModel.setMinDuration(value);
-                         });
-
-                         QObject::connect(thr, &QThread::finished, [thr, setEnabledAll]() {
-                             thr->deleteLater();
-                             setEnabledAll(true);
-                         });
-
-                         thr->start();
+                         filesModel.setMinDuration(value);
+                         setEnabledAll(true);
                      });
 
     // Player
