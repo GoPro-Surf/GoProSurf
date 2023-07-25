@@ -7,7 +7,6 @@
 
 #include "GpsInfo.h"
 #include "Detector.h"
-#include <QFileInfo.h>
 #include <QAbstractItemModel>
 #include <QBrush>
 #include <QDir>
