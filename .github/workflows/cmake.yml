@@ -40,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ubuntu-${{env.GITHUB_REF_NAME}}
-        path: ${{github.workspace}}\build\Release
+        path: ${{github.workspace}}/build/Release
         
   build_windows:
     runs-on: windows-latest
@@ -66,6 +66,7 @@ jobs:
     - name: Build
       run: |
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        cp ${{env.Qt6_DIR}}/bin/Qt6Charts.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Core.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Gui.dll ${{github.workspace}}/build/Release
         cp ${{env.Qt6_DIR}}/bin/Qt6Multimedia.dll ${{github.workspace}}/build/Release
