@@ -24,7 +24,7 @@ set(GOPROSURF_SOURCES
         )
 
 if (WIN32)
-    add_executable(GoProSurf WIN32 main.cpp)
+    add_executable(GoProSurf main.cpp)
 else ()
     add_executable(GoProSurf main.cpp)
 endif ()

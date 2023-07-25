@@ -78,7 +78,9 @@ jobs:
         cp ${{env.Qt6_DIR}}/bin/Qt6Widgets.dll ${{github.workspace}}/build/Release
         mkdir ${{github.workspace}}/build/Release/platforms
         cp ${{env.QT_PLUGIN_PATH}}/platforms/qwindows.dll ${{github.workspace}}/build/Release/platforms
-      
+        mkdir ${{github.workspace}}/build/Release/tls
+        cp ${{env.QT_PLUGIN_PATH}}/tls::/qschannelbackend.dll ${{github.workspace}}/build/Release/tls
+
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:

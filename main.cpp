@@ -11,18 +11,8 @@
 #include "QWavesModel.h"
 #include "QVersion.h"
 
-#ifdef _WIN32
-
-#include <Windows.h>
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication app(__argc, __argv);
-
-#else
-    int main(int argc, char* argv[]) {
-        QApplication app(argc, argv);
-#endif
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
 
     QMainWindow mainWindow;
     Ui_MainWindow mainWindowUi{};
