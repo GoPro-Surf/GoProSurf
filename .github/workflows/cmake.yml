@@ -11,7 +11,6 @@ env:
 
 jobs:
   build_ubuntu:
-    if: contains('', 'a')
     runs-on: ubuntu-latest
 
     steps:
@@ -40,8 +39,8 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ubuntu-${{ env.GITHUB_REF_NAME }}
-        path: /home/runner/work/GoProSurf/GoProSurf/build/GoProSurf
+        name: ubuntu-${{env.GITHUB_REF_NAME}}
+        path: ${{github.workspace}}\build\Release
         
   build_windows:
     runs-on: windows-latest
@@ -67,12 +66,20 @@ jobs:
     - name: Build
       run: |
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-        echo v1 $Qt6_DIR
-        echo v2 ${{env.Qt6_DIR}}
-        cp ${{env.Qt6_DIR}}/bin/Qt6Chartsd.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6Core.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6Gui.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6Multimedia.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6MultimediaWidgets.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6Network.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6OpenGL.dll ${{github.workspace}}/build/Release        
+        cp ${{env.Qt6_DIR}}/bin/Qt6OpenGLWidgets.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6OpenGL.dll ${{github.workspace}}/build/Release
+        cp ${{env.Qt6_DIR}}/bin/Qt6Widgets.dll ${{github.workspace}}/build/Release
+        mkdir ${{github.workspace}}/build/Release/platforms
+        cp ${{env.QT_PLUGIN_PATH}}/platforms/qwindows.dll ${{github.workspace}}/build/Release/platforms
       
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows-${{ env.GITHUB_REF_NAME }}
+        name: windows-${{env.GITHUB_REF_NAME}}
         path: ${{github.workspace}}\build\Release
