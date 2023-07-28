@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'GoProSurfijpFXE.ui'
+** Form generated from reading UI file 'GoProSurfNMECzi.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.2.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef GOPROSURFIJPFXE_H
-#define GOPROSURFIJPFXE_H
+#ifndef GOPROSURFNMECZI_H
+#define GOPROSURFNMECZI_H
 
 #include <QtCharts/QChartView>
 #include <QtCore/QVariant>
@@ -46,6 +46,9 @@ public:
     QDoubleSpinBox *minSpeedSpinBox;
     QLabel *minDurationlabel;
     QTableView *filesTable;
+    QHBoxLayout *horizontalLayout_3;
+    QPushButton *deleteButton;
+    QPushButton *deleteEmptyButton;
     QTableView *wavesTable;
     QVBoxLayout *videoLayout;
     QFrame *frame;
@@ -117,6 +120,25 @@ public:
 
         filesVerticalLayout->addWidget(filesTable);
 
+        horizontalLayout_3 = new QHBoxLayout();
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        deleteButton = new QPushButton(centralwidget);
+        deleteButton->setObjectName(QString::fromUtf8("deleteButton"));
+        deleteButton->setEnabled(false);
+        deleteButton->setStyleSheet(QString::fromUtf8("color: rgb(237, 51, 59);"));
+
+        horizontalLayout_3->addWidget(deleteButton);
+
+        deleteEmptyButton = new QPushButton(centralwidget);
+        deleteEmptyButton->setObjectName(QString::fromUtf8("deleteEmptyButton"));
+        deleteEmptyButton->setEnabled(false);
+        deleteEmptyButton->setStyleSheet(QString::fromUtf8("color: rgb(224, 27, 36);"));
+
+        horizontalLayout_3->addWidget(deleteEmptyButton);
+
+
+        filesVerticalLayout->addLayout(horizontalLayout_3);
+
         wavesTable = new QTableView(centralwidget);
         wavesTable->setObjectName(QString::fromUtf8("wavesTable"));
         wavesTable->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -126,7 +148,7 @@ public:
 
         filesVerticalLayout->setStretch(0, 3);
         filesVerticalLayout->setStretch(2, 3);
-        filesVerticalLayout->setStretch(3, 2);
+        filesVerticalLayout->setStretch(4, 2);
 
         horizontalLayout->addLayout(filesVerticalLayout);
 
@@ -204,6 +226,11 @@ public:
         groupBox->setTitle(QCoreApplication::translate("MainWindow", "Detect options:", nullptr));
         minSpeedlabel->setText(QCoreApplication::translate("MainWindow", "Min speed (m/s):", nullptr));
         minDurationlabel->setText(QCoreApplication::translate("MainWindow", "Min. duration (s):", nullptr));
+        deleteButton->setText(QCoreApplication::translate("MainWindow", "Delete", nullptr));
+#if QT_CONFIG(tooltip)
+        deleteEmptyButton->setToolTip(QString());
+#endif // QT_CONFIG(tooltip)
+        deleteEmptyButton->setText(QCoreApplication::translate("MainWindow", "Delete empty", nullptr));
         playerButton->setText(QCoreApplication::translate("MainWindow", "\342\226\266", nullptr));
     } // retranslateUi
 
@@ -215,4 +242,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // GOPROSURFIJPFXE_H
+#endif // GOPROSURFNMECZI_H

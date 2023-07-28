@@ -45,6 +45,29 @@ public:
         return files[index.row()];
     }
 
+    void removeFile(QModelIndex index) {
+        auto it = files.begin() + index.row();
+        beginRemoveRows(index.parent(), index.row(), index.row());
+        if (QFile::remove(it->fileInfo.absoluteFilePath())) {
+            files.erase(it);
+            endRemoveRows();
+        }
+    }
+
+    void removeEmptyFiles() {
+        beginResetModel();
+        std::vector<goProFile> newFiles;
+        newFiles.reserve(files.size());
+        for (const auto &f: files)
+            if (f.waves.empty())
+                QFile::remove(f.fileInfo.absoluteFilePath());
+            else
+                newFiles.push_back(f);
+
+        files = newFiles;
+        endResetModel();
+    }
+
     [[nodiscard]] QModelIndex index(int row, int column, const QModelIndex &parent) const override {
         return createIndex(row, column);
     }

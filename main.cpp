@@ -34,6 +34,8 @@ int main(int argc, char *argv[]) {
         mainWindowUi.minDurationSpinBox->setEnabled(enabled);
         mainWindowUi.playerButton->setEnabled(enabled && mainWindowUi.filesTable->selectionModel()->hasSelection());
         mainWindowUi.playerSlider->setEnabled(enabled && mainWindowUi.filesTable->selectionModel()->hasSelection());
+        mainWindowUi.deleteButton->setEnabled(enabled && mainWindowUi.filesTable->selectionModel()->hasSelection());
+        mainWindowUi.deleteEmptyButton->setEnabled(enabled && filesModel.rowCount({}));
     };
 
     QFileIconProvider fsIconProvider;
@@ -76,6 +78,8 @@ int main(int argc, char *argv[]) {
                          QString path = indexes.isEmpty() ? "" : dirsModel.filePath(indexes.first());
 
                          filesModel.setPath(path);
+
+                         mainWindowUi.filesTable->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
                          setEnabledAll(true);
                      });
 
@@ -129,6 +133,37 @@ int main(int argc, char *argv[]) {
 
                          setEnabledAll(true);
                      });
+
+    // Delete buttons
+    QObject::connect(mainWindowUi.deleteButton, &QPushButton::clicked, [&]() {
+        setEnabledAll(false);
+        auto index = mainWindowUi.filesTable->selectionModel()->selection().indexes()[0];
+        auto curFile = filesModel.getProfile(index);
+        if (QMessageBox::question(&mainWindow, "Are you sure?", QString("Do you want to delete the file %1?")
+                .arg(curFile.fileInfo.absoluteFilePath())) == QMessageBox::Yes) {
+            filesModel.removeFile(index);
+            if (!mainWindowUi.filesTable->selectionModel()->hasSelection()) {
+                player.setSource(QUrl::fromLocalFile(""));
+                mainWindowUi.chartView->chart()->removeAllSeries();
+                mainWindowUi.chartView->scene()->removeItem(marker);
+            }
+        }
+        setEnabledAll(true);
+    });
+
+    QObject::connect(mainWindowUi.deleteEmptyButton, &QPushButton::clicked, [&]() {
+        setEnabledAll(false);
+        if (QMessageBox::question(&mainWindow, "Are you sure?", "Do you want to delete all files without waves?") ==
+            QMessageBox::Yes) {
+            filesModel.removeEmptyFiles();
+            if (!mainWindowUi.filesTable->selectionModel()->hasSelection()) {
+                player.setSource(QUrl::fromLocalFile(""));
+                mainWindowUi.chartView->chart()->removeAllSeries();
+                mainWindowUi.chartView->scene()->removeItem(marker);
+            }
+        }
+        setEnabledAll(true);
+    });
 
     // Waves
     QObject::connect(mainWindowUi.wavesTable->selectionModel(), &QItemSelectionModel::selectionChanged,
