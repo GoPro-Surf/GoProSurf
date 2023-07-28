@@ -109,6 +109,8 @@ public:
                             .arg(t.addSecs((int) sum).toString("mm:ss"));
                 case 3:
                     return t.addSecs((int) files[index.row()].gpsInfo.GetVideoDuration()).toString("mm:ss");
+                case 4:
+                    return QString("%1 km/h").arg(round(files[index.row()].gpsInfo.GetMaxSpeed3d() * 3.6));
                 default:
                     return QString("-");
             }
@@ -174,7 +176,7 @@ private:
         endResetModel();
     }
 
-    const std::array<QString, 4> tableHeader = {"File", "Time", "Waves", "Duration"};
+    const std::array<QString, 5> tableHeader = {"File", "Time", "Waves", "Duration", "Max speed"};
     float minSpeed;
     size_t minDuration;
     QFileSystemModel fsModel;

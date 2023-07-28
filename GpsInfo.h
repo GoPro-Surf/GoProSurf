@@ -37,7 +37,7 @@ public:
         }
     }
 
-    float GetAvgSpeed3d() {
+    [[nodiscard]] float GetAvgSpeed3d() const {
         if (fix == 0 || precision > 500 || frames.empty())
             return 0;
 
@@ -104,6 +104,14 @@ public:
         for (auto &stream: gpsBySeconds) {
             res.push_back(stream.GetAvgSpeed3d());
         }
+
+        return res;
+    }
+
+    [[nodiscard]] float GetMaxSpeed3d() const {
+        float res = 0;
+        for (auto &stream: gpsBySeconds)
+            res = std::max(res, stream.GetAvgSpeed3d());
 
         return res;
     }
