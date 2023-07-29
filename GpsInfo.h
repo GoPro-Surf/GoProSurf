@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <QDateTime>
 #include "demo/GPMF_mp4reader.h"
 #include "GPMF_common.h"
 #include "GPMF_parser.h"

@@ -13,6 +13,7 @@
 #include <QFileSystemModel>
 #include <QFileIconProvider>
 #include <QCoreApplication>
+#include <QObject>
 
 struct goProFile {
     QFileInfo fileInfo;
@@ -22,6 +23,12 @@ struct goProFile {
 };
 
 class QGoProFiles : public QAbstractItemModel {
+Q_OBJECT
+
+signals:
+
+    void progressUpdated(int percentage);
+
 public:
     explicit QGoProFiles(float minSpeed, size_t minDuration, QObject *parent = nullptr)
             : QAbstractItemModel(parent), minSpeed(minSpeed), minDuration(minDuration) {}
@@ -143,12 +150,15 @@ public:
 
 private:
     void update() {
+        emit progressUpdated(0);
         beginResetModel();
 
         files.clear();
 
         auto filesList = fsModel.rootDirectory().entryInfoList(QDir::Files, QDir::Name);
+        int i = 0;
         for (const auto &fileInfo: filesList) {
+            emit progressUpdated(i++ * 100 / (int) filesList.size());
             QCoreApplication::processEvents();
 
             if (fileInfo.filesystemFilePath().extension() == ".MP4") {
@@ -174,6 +184,8 @@ private:
         });
 
         endResetModel();
+
+        emit progressUpdated(100);
     }
 
     const std::array<QString, 5> tableHeader = {"File", "Time", "Waves", "Duration", "Max speed"};

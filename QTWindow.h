@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'GoProSurfNMECzi.ui'
+** Form generated from reading UI file 'GoProSurfDHJnkA.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.2.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef GOPROSURFNMECZI_H
-#define GOPROSURFNMECZI_H
+#ifndef GOPROSURFDHJNKA_H
+#define GOPROSURFDHJNKA_H
 
 #include <QtCharts/QChartView>
 #include <QtCore/QVariant>
@@ -21,6 +21,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
@@ -46,6 +47,7 @@ public:
     QDoubleSpinBox *minSpeedSpinBox;
     QLabel *minDurationlabel;
     QTableView *filesTable;
+    QProgressBar *progressBar;
     QHBoxLayout *horizontalLayout_3;
     QPushButton *deleteButton;
     QPushButton *deleteEmptyButton;
@@ -120,6 +122,11 @@ public:
 
         filesVerticalLayout->addWidget(filesTable);
 
+        progressBar = new QProgressBar(centralwidget);
+        progressBar->setObjectName(QString::fromUtf8("progressBar"));
+
+        filesVerticalLayout->addWidget(progressBar);
+
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         deleteButton = new QPushButton(centralwidget);
@@ -148,7 +155,7 @@ public:
 
         filesVerticalLayout->setStretch(0, 3);
         filesVerticalLayout->setStretch(2, 3);
-        filesVerticalLayout->setStretch(4, 2);
+        filesVerticalLayout->setStretch(5, 2);
 
         horizontalLayout->addLayout(filesVerticalLayout);
 
@@ -242,4 +249,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // GOPROSURFNMECZI_H
+#endif // GOPROSURFDHJNKA_H

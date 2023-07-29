@@ -72,6 +72,8 @@ int main(int argc, char *argv[]) {
     // Directory
     QObject::connect(mainWindowUi.directoriesTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
                      [&](const QItemSelection &selected, const QItemSelection &deselected) {
+                         mainWindowUi.progressBar->setValue(0);
+                         mainWindowUi.progressBar->show();
                          setEnabledAll(false);
                          mainWindowUi.filesTable->clearSelection();
                          QModelIndexList indexes = selected.indexes();
@@ -81,6 +83,7 @@ int main(int argc, char *argv[]) {
 
                          mainWindowUi.filesTable->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
                          setEnabledAll(true);
+                         mainWindowUi.progressBar->hide();
                      });
 
     // Files
@@ -133,6 +136,11 @@ int main(int argc, char *argv[]) {
 
                          setEnabledAll(true);
                      });
+
+    // Progress
+    mainWindowUi.progressBar->hide();
+    QObject::connect(&filesModel, &QGoProFiles::progressUpdated, mainWindowUi.progressBar,
+                     &QProgressBar::setValue);
 
     // Delete buttons
     QObject::connect(mainWindowUi.deleteButton, &QPushButton::clicked, [&]() {

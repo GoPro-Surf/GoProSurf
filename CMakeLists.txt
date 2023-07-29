@@ -3,6 +3,16 @@ project(GoProSurf)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_AUTOMOC ON)
+
+if(WIN32)
+    set(ICON_FILE ${CMAKE_SOURCE_DIR}/.win/icon.ico)
+    set(WIN_RC_FILE ${CMAKE_SOURCE_DIR}/.win/resource.rc)
+    set(CMAKE_RC_COMPILER_INIT windres)
+    ENABLE_LANGUAGE(RC)
+    SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+endif()
+
 find_package(Qt6 COMPONENTS Core Charts Gui Widgets Multimedia MultimediaWidgets REQUIRED)
 
 #find_package(PkgConfig REQUIRED)
@@ -13,14 +23,6 @@ find_package(Qt6 COMPONENTS Core Charts Gui Widgets Multimedia MultimediaWidgets
 #        libswscale
 #        libavutil
 #        )
-
-if(WIN32)
-    set(ICON_FILE ${CMAKE_SOURCE_DIR}/.win/icon.ico)
-    set(WIN_RC_FILE ${CMAKE_SOURCE_DIR}/.win/resource.rc)
-    set(CMAKE_RC_COMPILER_INIT windres)
-    ENABLE_LANGUAGE(RC)
-    SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
-endif()
 
 include_directories(third_party/gpmf-parser)
 
