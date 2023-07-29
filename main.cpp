@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QFileSystemModel>
+#include <QFileDialog>
 #include <QFileIconProvider>
 #include <QMediaPlayer>
 #include <QMessageBox>
@@ -36,6 +37,7 @@ int main(int argc, char *argv[]) {
         mainWindowUi.playerSlider->setEnabled(enabled && mainWindowUi.filesTable->selectionModel()->hasSelection());
         mainWindowUi.deleteButton->setEnabled(enabled && mainWindowUi.filesTable->selectionModel()->hasSelection());
         mainWindowUi.deleteEmptyButton->setEnabled(enabled && filesModel.rowCount({}));
+        mainWindowUi.exportButton->setEnabled(enabled && filesModel.rowCount({}));
     };
 
     QFileIconProvider fsIconProvider;
@@ -142,7 +144,23 @@ int main(int argc, char *argv[]) {
     QObject::connect(&filesModel, &QGoProFiles::progressUpdated, mainWindowUi.progressBar,
                      &QProgressBar::setValue);
 
-    // Delete buttons
+    // Files buttons'
+    QObject::connect(mainWindowUi.exportButton, &QPushButton::clicked, [&]() {
+        QString destinationDir = QFileDialog::getExistingDirectory(&mainWindow, "Choose Destination Directory",
+                                                                   QDir::homePath());
+        if (destinationDir.isEmpty()) {
+            return;
+        }
+        setEnabledAll(false);
+        mainWindowUi.progressBar->setValue(0);
+        mainWindowUi.progressBar->show();
+
+        filesModel.exportFiles(destinationDir);
+
+        setEnabledAll(true);
+        mainWindowUi.progressBar->hide();
+    });
+
     QObject::connect(mainWindowUi.deleteButton, &QPushButton::clicked, [&]() {
         setEnabledAll(false);
         auto index = mainWindowUi.filesTable->selectionModel()->selection().indexes()[0];

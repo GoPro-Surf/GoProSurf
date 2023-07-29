@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,3">
       <item>
-       <layout class="QVBoxLayout" name="filesVerticalLayout" stretch="3,0,3,0,2">
+       <layout class="QVBoxLayout" name="filesVerticalLayout" stretch="3,0,3,0,0,2">
         <item>
          <widget class="QTreeView" name="directoriesTreeView"/>
         </item>
@@ -91,7 +91,17 @@
          </widget>
         </item>
         <item>
+         <widget class="QProgressBar" name="progressBar"/>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QPushButton" name="exportButton">
+            <property name="text">
+             <string>Export all</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPushButton" name="deleteButton">
             <property name="enabled">

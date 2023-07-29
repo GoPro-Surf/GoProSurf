@@ -52,6 +52,32 @@ public:
         return files[index.row()];
     }
 
+    void exportFiles(QString &destDir) {
+        int i = 0;
+        for (const auto &file: files) {
+            emit progressUpdated(i++ * 100 / (int) files.size());
+            QCoreApplication::processEvents();
+
+            auto dt = file.gpsInfo.GetTs().isNull() ? file.fileInfo.birthTime() : file.gpsInfo.GetTs();
+            auto dst = std::filesystem::path(destDir.toStdString()) / dt.toString("yyyy-MM-dd").toStdString() /
+                       file.fileInfo.fileName().toStdString();
+            QFile dstFile(dst.c_str());
+            QFile srcFile(file.fileInfo.absoluteFilePath());
+            if (dstFile.exists() && srcFile.size() == srcFile.size())
+                continue;
+
+            QDir dstDir(dst.parent_path());
+            if (!dstDir.exists())
+                if (!dstDir.mkpath(dstDir.absolutePath()))
+                    qCritical() << "Cannot create dst dir" << dstDir.absolutePath() << ":" << srcFile.errorString();
+
+            if (!srcFile.copy(dstFile.fileName()))
+                qCritical() << "Cannot copy" << srcFile.fileName() << "to" << dstFile.fileName() << ":"
+                            << srcFile.errorString();
+        }
+        emit progressUpdated(100);
+    }
+
     void removeFile(QModelIndex index) {
         auto it = files.begin() + index.row();
         beginRemoveRows(index.parent(), index.row(), index.row());

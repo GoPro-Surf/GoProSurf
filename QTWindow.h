@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'GoProSurfDHJnkA.ui'
+** Form generated from reading UI file 'GoProSurfTWlFLj.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.2.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef GOPROSURFDHJNKA_H
-#define GOPROSURFDHJNKA_H
+#ifndef GOPROSURFTWLFLJ_H
+#define GOPROSURFTWLFLJ_H
 
 #include <QtCharts/QChartView>
 #include <QtCore/QVariant>
@@ -49,6 +49,7 @@ public:
     QTableView *filesTable;
     QProgressBar *progressBar;
     QHBoxLayout *horizontalLayout_3;
+    QPushButton *exportButton;
     QPushButton *deleteButton;
     QPushButton *deleteEmptyButton;
     QTableView *wavesTable;
@@ -129,6 +130,11 @@ public:
 
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        exportButton = new QPushButton(centralwidget);
+        exportButton->setObjectName(QString::fromUtf8("exportButton"));
+
+        horizontalLayout_3->addWidget(exportButton);
+
         deleteButton = new QPushButton(centralwidget);
         deleteButton->setObjectName(QString::fromUtf8("deleteButton"));
         deleteButton->setEnabled(false);
@@ -233,6 +239,7 @@ public:
         groupBox->setTitle(QCoreApplication::translate("MainWindow", "Detect options:", nullptr));
         minSpeedlabel->setText(QCoreApplication::translate("MainWindow", "Min speed (m/s):", nullptr));
         minDurationlabel->setText(QCoreApplication::translate("MainWindow", "Min. duration (s):", nullptr));
+        exportButton->setText(QCoreApplication::translate("MainWindow", "Export all", nullptr));
         deleteButton->setText(QCoreApplication::translate("MainWindow", "Delete", nullptr));
 #if QT_CONFIG(tooltip)
         deleteEmptyButton->setToolTip(QString());
@@ -249,4 +256,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // GOPROSURFDHJNKA_H
+#endif // GOPROSURFTWLFLJ_H
