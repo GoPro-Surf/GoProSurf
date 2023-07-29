@@ -10,6 +10,7 @@
 #include <QAbstractItemModel>
 #include <QBrush>
 #include <QDir>
+#include <QFile>
 #include <QFileSystemModel>
 #include <QFileIconProvider>
 #include <QCoreApplication>
@@ -61,7 +62,7 @@ public:
             auto dt = file.gpsInfo.GetTs().isNull() ? file.fileInfo.birthTime() : file.gpsInfo.GetTs();
             auto dst = std::filesystem::path(destDir.toStdString()) / dt.toString("yyyy-MM-dd").toStdString() /
                        file.fileInfo.fileName().toStdString();
-            QFile dstFile(dst.c_str());
+            QFile dstFile(dst);
             QFile srcFile(file.fileInfo.absoluteFilePath());
             if (dstFile.exists() && srcFile.size() == srcFile.size())
                 continue;
