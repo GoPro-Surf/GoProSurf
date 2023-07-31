@@ -14,6 +14,8 @@
 #include <QFileIconProvider>
 #include <QCoreApplication>
 #include <QObject>
+#include <QFutureWatcher>
+#include <QtConcurrent/QtConcurrent>
 
 struct goProFile {
     QFileInfo fileInfo;
@@ -29,9 +31,22 @@ signals:
 
     void progressUpdated(int percentage);
 
+    void progressFinished();
+
 public:
     explicit QGoProFiles(float minSpeed, size_t minDuration, QObject *parent = nullptr)
-            : QAbstractItemModel(parent), minSpeed(minSpeed), minDuration(minDuration) {}
+            : QAbstractItemModel(parent), minSpeed(minSpeed), minDuration(minDuration) {
+        connect(&watcher, &QFutureWatcher<void>::progressValueChanged, [this](int value) {
+            emit progressUpdated(value);
+        });
+
+        connect(&watcher, &QFutureWatcher<void>::finished, this, [this]() {
+            endResetModel();
+            emit progressFinished();
+        });
+    }
+
+public slots:
 
     void setPath(const QString &path) {
         fsModel.setRootPath(path);
@@ -48,34 +63,41 @@ public:
         update();
     }
 
+public:
+
     goProFile getProfile(QModelIndex index) {
         return files[index.row()];
     }
 
     void exportFiles(QString &destDir) {
-        int i = 0;
-        for (const auto &file: files) {
-            emit progressUpdated(i++ * 100 / (int) files.size());
-            QCoreApplication::processEvents();
+        if (watcher.isRunning())
+            watcher.cancel();
 
-            auto dt = file.gpsInfo.GetTs().isNull() ? file.fileInfo.birthTime() : file.gpsInfo.GetTs();
-            auto dst = std::filesystem::path(destDir.toStdString()) / dt.toString("yyyy-MM-dd").toStdString() /
-                       file.fileInfo.fileName().toStdString();
-            QFile dstFile(dst.c_str());
-            QFile srcFile(file.fileInfo.absoluteFilePath());
-            if (dstFile.exists() && srcFile.size() == srcFile.size())
-                continue;
+        beginResetModel();
 
-            QDir dstDir(dst.parent_path());
-            if (!dstDir.exists())
-                if (!dstDir.mkpath(dstDir.absolutePath()))
-                    qCritical() << "Cannot create dst dir" << dstDir.absolutePath() << ":" << srcFile.errorString();
+        watcher.setFuture(QtConcurrent::run([this, destDir]() {
+            int i = 0;
+            for (const auto &file: files) {
+                emit watcher.progressValueChanged(i++ * 100 / (int) files.size());
 
-            if (!srcFile.copy(dstFile.fileName()))
-                qCritical() << "Cannot copy" << srcFile.fileName() << "to" << dstFile.fileName() << ":"
-                            << srcFile.errorString();
-        }
-        emit progressUpdated(100);
+                auto dt = file.gpsInfo.GetTs().isNull() ? file.fileInfo.birthTime() : file.gpsInfo.GetTs();
+                auto dst = std::filesystem::path(destDir.toStdString()) / dt.toString("yyyy-MM-dd").toStdString() /
+                           file.fileInfo.fileName().toStdString();
+                QFile dstFile(dst.c_str());
+                QFile srcFile(file.fileInfo.absoluteFilePath());
+                if (dstFile.exists() && srcFile.size() == srcFile.size())
+                    continue;
+
+                QDir dstDir(dst.parent_path());
+                if (!dstDir.exists())
+                    if (!dstDir.mkpath(dstDir.absolutePath()))
+                        qCritical() << "Cannot create dst dir" << dstDir.absolutePath() << ":" << srcFile.errorString();
+
+                if (!srcFile.copy(dstFile.fileName()))
+                    qCritical() << "Cannot copy" << srcFile.fileName() << "to" << dstFile.fileName() << ":"
+                                << srcFile.errorString();
+            }
+        }));
     }
 
     void removeFile(QModelIndex index) {
@@ -176,42 +198,43 @@ public:
 
 private:
     void update() {
-        emit progressUpdated(0);
+        if (watcher.isRunning())
+            watcher.cancel();
+
         beginResetModel();
 
-        files.clear();
+        watcher.setFuture(QtConcurrent::run([this]() {
+            files.clear();
 
-        auto filesList = fsModel.rootDirectory().entryInfoList(QDir::Files, QDir::Name);
-        int i = 0;
-        for (const auto &fileInfo: filesList) {
-            emit progressUpdated(i++ * 100 / (int) filesList.size());
-            QCoreApplication::processEvents();
+            auto filesList = fsModel.rootDirectory().entryInfoList(QDir::Files, QDir::Name);
+            int i = 0;
+            for (const auto &fileInfo: filesList) {
+                emit watcher.progressValueChanged(i++ * 100 / (int) filesList.size());
 
-            if (fileInfo.filesystemFilePath().extension() == ".MP4") {
-                auto inputFile = fileInfo.absoluteFilePath().toStdString();
-                GpsInfo gpsInfo;
-                auto noGpsInfo = false;
-                std::vector<timeFrame> waves;
+                if (fileInfo.filesystemFilePath().extension() == ".MP4") {
+                    auto inputFile = fileInfo.absoluteFilePath().toStdString();
+                    GpsInfo gpsInfo;
+                    auto noGpsInfo = false;
+                    std::vector<timeFrame> waves;
 
-                try {
-                    gpsInfo.ReadFromVideo(inputFile);
-                    waves = Detector::GetWaves(gpsInfo, 0, minDuration, minSpeed);
-                } catch (...) {
-                    noGpsInfo = true;
+                    try {
+                        gpsInfo.ReadFromVideo(inputFile);
+                        waves = Detector::GetWaves(gpsInfo, 0, minDuration, minSpeed);
+                    } catch (...) {
+                        noGpsInfo = true;
+                    }
+                    files.push_back({fileInfo, gpsInfo, noGpsInfo, waves});
                 }
-                files.push_back({fileInfo, gpsInfo, noGpsInfo, waves});
             }
-        }
 
-        std::sort(files.begin(), files.end(), [](const goProFile &a, const goProFile &b) {
-            const auto &tsA = a.gpsInfo.GetTs().isNull() ? a.fileInfo.birthTime() : a.gpsInfo.GetTs();
-            const auto &tsB = b.gpsInfo.GetTs().isNull() ? b.fileInfo.birthTime() : b.gpsInfo.GetTs();
-            return tsA < tsB;
-        });
+            std::sort(files.begin(), files.end(), [](const goProFile &a, const goProFile &b) {
+                const auto &tsA = a.gpsInfo.GetTs().isNull() ? a.fileInfo.birthTime() : a.gpsInfo.GetTs();
+                const auto &tsB = b.gpsInfo.GetTs().isNull() ? b.fileInfo.birthTime() : b.gpsInfo.GetTs();
+                return tsA < tsB;
+            });
 
-        endResetModel();
-
-        emit progressUpdated(100);
+            emit watcher.progressValueChanged(100);
+        }));
     }
 
     const std::array<QString, 5> tableHeader = {"File", "Time", "Waves", "Duration", "Max speed"};
@@ -220,6 +243,7 @@ private:
     QFileSystemModel fsModel;
     QFileIconProvider fsIconProvider;
     std::vector<goProFile> files;
+    QFutureWatcher<void> watcher;
 };
 
 

@@ -76,16 +76,12 @@ int main(int argc, char *argv[]) {
                      [&](const QItemSelection &selected, const QItemSelection &deselected) {
                          mainWindowUi.progressBar->setValue(0);
                          mainWindowUi.progressBar->show();
-                         setEnabledAll(false);
                          mainWindowUi.filesTable->clearSelection();
+                         setEnabledAll(false);
                          QModelIndexList indexes = selected.indexes();
                          QString path = indexes.isEmpty() ? "" : dirsModel.filePath(indexes.first());
 
                          filesModel.setPath(path);
-
-                         mainWindowUi.filesTable->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-                         setEnabledAll(true);
-                         mainWindowUi.progressBar->hide();
                      });
 
     // Files
@@ -139,10 +135,18 @@ int main(int argc, char *argv[]) {
                          setEnabledAll(true);
                      });
 
+    QObject::connect(&filesModel, &QGoProFiles::progressUpdated, [&](int value) {
+        QMetaObject::invokeMethod(mainWindowUi.progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, value));
+    });
+
+    QObject::connect(&filesModel, &QGoProFiles::progressFinished, [&]() {
+        mainWindowUi.filesTable->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+        setEnabledAll(true);
+        mainWindowUi.progressBar->hide();
+    });
+
     // Progress
     mainWindowUi.progressBar->hide();
-    QObject::connect(&filesModel, &QGoProFiles::progressUpdated, mainWindowUi.progressBar,
-                     &QProgressBar::setValue);
 
     // Files buttons'
     QObject::connect(mainWindowUi.exportButton, &QPushButton::clicked, [&]() {
@@ -156,9 +160,6 @@ int main(int argc, char *argv[]) {
         mainWindowUi.progressBar->show();
 
         filesModel.exportFiles(destinationDir);
-
-        setEnabledAll(true);
-        mainWindowUi.progressBar->hide();
     });
 
     QObject::connect(mainWindowUi.deleteButton, &QPushButton::clicked, [&]() {
@@ -212,14 +213,12 @@ int main(int argc, char *argv[]) {
                      [&](double value) {
                          setEnabledAll(false);
                          filesModel.setMinSpeed((float) value);
-                         setEnabledAll(true);
                      });
 
     QObject::connect(mainWindowUi.minDurationSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
                      [&](int value) {
                          setEnabledAll(false);
                          filesModel.setMinDuration(value);
-                         setEnabledAll(true);
                      });
 
     // Player
