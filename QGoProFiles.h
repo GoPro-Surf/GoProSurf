@@ -79,13 +79,13 @@ public slots:
             for (const auto &file: files) {
                 emit watcher.progressValueChanged(i++ * 100 / (int) files.size());
 
-            auto dt = file.gpsInfo.GetTs().isNull() ? file.fileInfo.birthTime() : file.gpsInfo.GetTs();
-            auto dst = std::filesystem::path(destDir.toStdString()) / dt.toString("yyyy-MM-dd").toStdString() /
-                       file.fileInfo.fileName().toStdString();
-            QFile dstFile(dst.c_str());
-            QFile srcFile(file.fileInfo.absoluteFilePath());
-            if (dstFile.exists() && srcFile.size() == srcFile.size())
-                continue;
+                auto dt = file.gpsInfo.GetTs().isNull() ? file.fileInfo.birthTime() : file.gpsInfo.GetTs();
+                auto dst = std::filesystem::path(destDir.toStdString()) / dt.toString("yyyy-MM-dd").toStdString() /
+                           file.fileInfo.fileName().toStdString();
+                QFile dstFile(dst);
+                QFile srcFile(file.fileInfo.absoluteFilePath());
+                if (dstFile.exists() && srcFile.size() == srcFile.size())
+                    continue;
 
                 QDir dstDir(dst.parent_path());
                 if (!dstDir.exists())
