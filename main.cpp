@@ -212,12 +212,14 @@ int main(int argc, char *argv[]) {
     QObject::connect(mainWindowUi.minSpeedSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
                      [&](double value) {
                          setEnabledAll(false);
+                         mainWindowUi.progressBar->show();
                          filesModel.setMinSpeed((float) value);
                      });
 
     QObject::connect(mainWindowUi.minDurationSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
                      [&](int value) {
                          setEnabledAll(false);
+                         mainWindowUi.progressBar->show();
                          filesModel.setMinDuration(value);
                      });
 
